@@ -165,10 +165,15 @@ FONT-LOADER, if present, otherwise NIL.")
             for platform-id = (read-uint16 input-stream)
             for platform-specific-id = (read-uint16 input-stream)
             for offset = (+ start-pos (read-uint32 input-stream))
-            when (and (= platform-id
-                         +microsoft-platform-id+)
-                      (= platform-specific-id
-                         +microsoft-unicode-bmp-encoding-id+))
+;	    do (format t "Platform ID: ~A, platform-specific-id: ~A~%" platform-id platform-specific-id)
+            when
+	    (or
+	     (and (= platform-id
+                     +microsoft-platform-id+)
+                  (= platform-specific-id
+                     +microsoft-unicode-bmp-encoding-id+))
+	     (and (= platform-id +unicode-platform-id+)
+		  (= platform-specific-id +unicode-2.0-encoding-id+)))
             do
             (file-position input-stream offset)
             (setf (character-map font-loader) (load-unicode-cmap input-stream))
