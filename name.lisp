@@ -578,6 +578,11 @@ table.")
                                      +macintosh-roman-encoding-id+
                                      +macintosh-english-language-id+
                                      name-id
+                                     font-loader)
+		    (find-name-entry +macintosh-platform-id+
+                                     +microsoft-symbol-encoding-id+
+                                     +unicode-language-id+
+                                     name-id
                                      font-loader))))
     (when entry
       (value entry))))

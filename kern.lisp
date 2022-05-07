@@ -47,11 +47,11 @@ distance between the pair."
             (read-int16 stream)))))
 
 (defmethod load-kerning-subtable ((font-loader font-loader) format)
-  (when (/= 1 format)
+  (when (/= 0 format)
     (error 'unsupported-format
            :description "kerning subtable"
            :size 1
-           :expected-values (list 1)
+           :expected-values (list 0)
            :actual-value format))
   (load-kerning-format-1 (kerning-table font-loader)
                          (input-stream font-loader)))
