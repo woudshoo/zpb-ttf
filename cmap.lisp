@@ -173,7 +173,9 @@ FONT-LOADER, if present, otherwise NIL.")
                   (= platform-specific-id
                      +microsoft-unicode-bmp-encoding-id+))
 	     (and (= platform-id +unicode-platform-id+)
-		  (= platform-specific-id +unicode-2.0-encoding-id+)))
+		  (= platform-specific-id +unicode-2.0-encoding-id+))
+	     (and (= platform-id +unicode-platform-id+)
+		  (= platform-specific-id +unicode-1.1-encoding-id+)))
             do
             (file-position input-stream offset)
             (setf (character-map font-loader) (load-unicode-cmap input-stream))

@@ -33,6 +33,19 @@
 
 (in-package #:zpb-ttf)
 
+(defun load-kerning-format-0 (table stream)
+  "Return a hash table keyed on a UINT32 key that represents the glyph
+index in the left and right halves with a value of the kerning
+distance between the pair."
+  (let ((pair-count (read-uint16 stream))
+        (search-range (read-uint16 stream))
+        (entry-selector (read-uint16 stream))
+        (range-shift (read-uint16 stream)))
+    (declare (ignore search-range entry-selector range-shift))
+    (dotimes (i pair-count)
+      (setf (gethash (read-uint32 stream) table)
+            (read-int16 stream)))))
+
 (defun load-kerning-format-1 (table stream)
   "Return a hash table keyed on a UINT32 key that represents the glyph
 index in the left and right halves with a value of the kerning
@@ -47,14 +60,16 @@ distance between the pair."
             (read-int16 stream)))))
 
 (defmethod load-kerning-subtable ((font-loader font-loader) format)
-  (when (/= 0 format)
-    (error 'unsupported-format
-           :description "kerning subtable"
-           :size 1
-           :expected-values (list 0)
-           :actual-value format))
-  (load-kerning-format-1 (kerning-table font-loader)
-                         (input-stream font-loader)))
+  (case format
+    (0 (load-kerning-format-0 (kerning-table font-loader)
+			      (input-stream font-loader)))
+    (1 (load-kerning-format-1 (kerning-table font-loader)
+			      (input-stream font-loader)))
+    (t (error 'unsupported-format
+	      :description "kerning subtable"
+              :size 1
+              :expected-values (list 0 1)
+              :actual-value format))))
 
 (defmethod load-kern-info ((font-loader font-loader))
   (when (table-exists-p "kern" font-loader)
@@ -70,18 +85,19 @@ distance between the pair."
       ;; See:
       ;;  http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html
       ;;  https://docs.microsoft.com/en-us/typography/opentype/spec/kern
-      (if (zerop version)
+      (if (zerop maybe-version)
           (setf version maybe-version
                 table-count maybe-table-count)
-          (setf version (logand (ash maybe-version 16) maybe-table-count)
+          (setf version (logior (ash maybe-version 16) maybe-table-count)
                 table-count (read-uint32 stream)))
-      (check-version "\"kern\" table" version 0)
+      (check-version "\"kern\" table" version 0 #x00010000)
       (dotimes (i table-count)
         (let ((version (read-uint16 stream))
               (length (read-uint16 stream))
               (coverage-flags (read-uint8 stream))
-              (format (read-uint8 stream)))
-          (declare (ignore version length coverage-flags))
+              (format (read-uint8 stream))
+	      (tuple-index (when (= version #x00010000) (read-uint16 stream))))
+	  (declare (ignore version length coverage-flags tuple-index))
           (load-kerning-subtable font-loader format))))))
 
 (defmethod all-kerning-pairs ((font-loader font-loader))
