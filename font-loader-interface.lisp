@@ -52,7 +52,7 @@
 (defun open-font-loader-from-stream (input-stream &key (collection-index 0))
   (let ((magic (read-uint32 input-stream))
         (font-count))
-    (when (/= magic #x00010000 #x74727565 #x74746366)
+    (when (/= magic #x00010000 #x74727565 #x74746366  #x4F54544F)
       (error 'bad-magic
              :location "font header"
              :expected-values (list #x00010000 #x74727565 #x74746366)

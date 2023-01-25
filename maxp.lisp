@@ -37,5 +37,5 @@
   (seek-to-table "maxp" font-loader)
   (with-slots (input-stream glyph-count) font-loader
     (let ((version (read-uint32 input-stream)))
-      (check-version "\"maxp\" table" version #x00010000)
+      (check-version "\"maxp\" table" version #x00010000 #x00005000)
       (setf glyph-count (read-uint16 input-stream)))))

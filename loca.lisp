@@ -34,15 +34,16 @@
 (in-package #:zpb-ttf)
 
 (defmethod load-loca-info ((font-loader font-loader))
-  (seek-to-table "loca" font-loader)
-  (with-slots (input-stream glyph-locations glyph-count loca-offset-format)
-      font-loader
-    (setf glyph-locations (make-array (1+ glyph-count)))
-    (dotimes (i (1+ glyph-count))
-      (setf (svref glyph-locations i)
-            (if (eql loca-offset-format :short)
-                (* (read-uint16 input-stream) 2)
-                (read-uint32 input-stream))))))
+  (when (table-exists-p "loca" font-loader)
+    (seek-to-table "loca" font-loader)
+    (with-slots (input-stream glyph-locations glyph-count loca-offset-format)
+	font-loader
+      (setf glyph-locations (make-array (1+ glyph-count)))
+      (dotimes (i (1+ glyph-count))
+	(setf (svref glyph-locations i)
+              (if (eql loca-offset-format :short)
+                  (* (read-uint16 input-stream) 2)
+                  (read-uint32 input-stream)))))))
 
 (defmethod glyph-location (index (font-loader font-loader))
   (aref (glyph-locations font-loader) index))
